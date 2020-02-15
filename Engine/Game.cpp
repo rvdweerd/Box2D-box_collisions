@@ -60,11 +60,16 @@ Game::Game( MainWindow& wnd )
 				std::stringstream msg;
 				msg << "Collision between " << tid0.name() << " and " << tid1.name() << std::endl;
 				OutputDebugStringA( msg.str().c_str() );
+				
+				boxPtrs[1]->SetColorToWhite();
+				boxPtrs[0]->SetDestroyer();
+				
 			}
 		}
 	};
 	static Listener mrLister;
 	world.SetContactListener( &mrLister );
+	//system("pause");
 }
 
 void Game::Go()
@@ -79,6 +84,22 @@ void Game::UpdateModel()
 {
 	const float dt = ft.Mark();
 	world.Step( dt,8,3 );
+	//auto p = boxPtrs[0]->GetColorTrait().GetColor();
+	for (auto it = boxPtrs.begin(); it!=boxPtrs.end();)
+	{
+		if (it->get()->SelfDestructActive())
+		{
+			//Box* handle = it->get();
+			it = boxPtrs.erase(it);
+			//Box* bPtr = handle->release();
+			//assert(handle->get() == nullptr);
+			//delete bPtr;
+		}
+		else
+		{
+			++it;
+		}
+	}
 }
 
 void Game::ComposeFrame()

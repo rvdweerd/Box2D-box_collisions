@@ -67,6 +67,15 @@ public:
 	}
 };
 
+void Box::SetColorToWhite()
+{
+	//pColorTrait.reset( WhiteTrait().Clone() );
+	ColorTrait* temp = pColorTrait.release();
+	delete temp;
+	//pColorTrait = std::unique_ptr<WhiteTrait>();
+	pColorTrait = std::make_unique<WhiteTrait>();
+}
+
 std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& world,std::mt19937& rng )
 {
 	std::uniform_real_distribution<float> pos_dist(
@@ -82,7 +91,7 @@ std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& wo
 	const auto ang = angle_dist( rng );
 	const auto angVel = angle_dist( rng ) * 1.5f;
 
-	std::unique_ptr<ColorTrait> pColorTrait;
+	std::unique_ptr<ColorTrait> pColorTrait = nullptr;// std::make_unique<RedTrait>();
 	switch( type_dist( rng ) )
 	{
 	case 0:
@@ -104,3 +113,5 @@ std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& wo
 	
 	return std::make_unique<Box>( std::move( pColorTrait ),world,pos,size,ang,linVel,angVel );
 }
+
+

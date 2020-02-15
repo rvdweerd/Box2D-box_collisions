@@ -91,6 +91,15 @@ public:
 	{
 		return *pColorTrait;
 	}
+	void SetColorToWhite();
+	void SetDestroyer()
+	{
+		destroy = true;
+	}
+	bool SelfDestructActive()
+	{
+		return destroy;
+	}
 private:
 	static void Init()
 	{
@@ -105,4 +114,5 @@ private:
 	float size;
 	BodyPtr pBody;
 	std::unique_ptr<ColorTrait> pColorTrait;
+	bool destroy = false;
 };
