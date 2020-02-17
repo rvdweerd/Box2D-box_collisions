@@ -130,3 +130,5 @@ private:
 public:
 	//static std::map<PostCollisionBehavior, std::function<void(Box*)>> fMap;
 };
+
+

@@ -34,7 +34,7 @@
 #include <functional>
 #include <set>
 #include <queue>
-//#include "PostCollisionFunctions.h"
+#include "PostCollisionFunctions.h"
 
 class Game
 {
@@ -50,7 +50,7 @@ private:
 	/*  User Functions              */
 	/********************************/
 	//void ApplyTransformation();
-private:
+public:
 	MainWindow& wnd;
 	Graphics gfx;
 	/********************************/
@@ -64,7 +64,7 @@ private:
 	b2World world;
 	Boundaries bounds = Boundaries( world,boundarySize );
 	std::vector<std::unique_ptr<Box>> boxPtrs;
-	//std::queue<std::pair<Box*,PCFUNC>> instructQueue;
+	std::queue<std::pair<Box*,PCFUNC>> instructQueue;
 	//std::vector<Box*> instructions;
 	//static std::unordered_map<int, std::function<void( std::unique_ptr<Box> )>> funcMap;
 	//static std::set<Box*, std::function<void(std::vector<std::unique_ptr<Box>>)>> instructions;
