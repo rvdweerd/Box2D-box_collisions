@@ -26,24 +26,47 @@
 #include <typeinfo>
 #include <functional>
 #include <iterator>
+#include <map>
+#include "PostCollisionFunctions.h"
 
 Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
 	gfx( wnd ),
-	world( { 0.0f,-0.5f } ),
+	world( { 0.0f,0.0f } ),
 	pepe( gfx )
 {
 	pepe.effect.vs.cam.SetPos( { 0.0,0.0f } );
 	pepe.effect.vs.cam.SetZoom( 1.0f / boundarySize );
-
+	
 	std::generate_n( std::back_inserter( boxPtrs ),nBoxes,[this]() {
 		return Box::Spawn( boxSize,bounds,world,rng );
 	} );
 
+	bool WhiteExists = false;
+	for (auto i =0; i<nBoxes;i++)
+	{
+		if (boxPtrs[i]->GetColorTrait().GetColor().dword == Colors::White.dword)
+		{
+			WhiteExists = true;
+			break;
+		}
+	}
+	if (!WhiteExists)
+	{
+		boxPtrs.push_back(  Box::SpawnWhite(boxSize,bounds,world,rng) );
+	}
+	   
 	class Listener : public b2ContactListener
 	{
 	public:
+		//Game* m_game;
+		//Listener()//Game* game)
+			//:
+			//m_game(game)
+		//{
+
+		//}
 		void BeginContact( b2Contact* contact ) override
 		{
 			const b2Body* bodyPtrs[] = { contact->GetFixtureA()->GetBody(),contact->GetFixtureB()->GetBody() };
@@ -60,16 +83,29 @@ Game::Game( MainWindow& wnd )
 				std::stringstream msg;
 				msg << "Collision between " << tid0.name() << " and " << tid1.name() << std::endl;
 				OutputDebugStringA( msg.str().c_str() );
-				
-				boxPtrs[1]->SetColorToWhite();
-				boxPtrs[0]->SetDestroyer();
-				
+
+				if (boxPtrs[0]->GetColorTrait().GetColor().dword != boxPtrs[1]->GetColorTrait().GetColor().dword )
+				{
+					//boxPtrs[0]->SetAction(Box::PostCollisionBehavior::SplitInFour);
+					
+				}
+				if (boxPtrs[0]->GetColorTrait().GetColor().dword == Colors::White.dword || boxPtrs[1]->GetColorTrait().GetColor().dword == Colors::White.dword)
+				{
+					boxPtrs[0]->SetAction(Box::PostCollisionBehavior::SetColorToWhite);
+					boxPtrs[1]->SetAction(Box::PostCollisionBehavior::SetColorToWhite);
+
+					//m_game->instructQueue.push({ boxPtrs[0],PostCollisionFunctions::SetToWhite });
+					//m_game->instructQueue.push({ boxPtrs[1],PostCollisionFunctions::SetToWhite });
+					//auto k = m_game->nBoxes;
+					//m_game->instruction = [](Box* b) { b->SetColorToWhite(); b->SetAction(Box::PostCollisionBehavior::NoAction); };
+					//boxPtrs[1]->SetAction(Box::PostCollisionBehavior::SetColorToWhite);
+				}				
 			}
 		}
 	};
 	static Listener mrLister;
 	world.SetContactListener( &mrLister );
-	//system("pause");
+	
 }
 
 void Game::Go()
@@ -80,26 +116,61 @@ void Game::Go()
 	gfx.EndFrame();
 }
 
+
+
 void Game::UpdateModel()
 {
 	const float dt = ft.Mark();
 	world.Step( dt,8,3 );
-	//auto p = boxPtrs[0]->GetColorTrait().GetColor();
-	for (auto it = boxPtrs.begin(); it!=boxPtrs.end();)
+	//ApplyTransformation();
+	
+	//struct BoxSplitData
+	//{
+	//	Vec2 pos;
+	//	float size;
+	//};
+	//std::vector<BoxSplitData> newBoxes;
+	for (auto it = boxPtrs.begin(); it != boxPtrs.end();)
 	{
-		if (it->get()->SelfDestructActive())
+		if (it->get()->GetAction() == Box::PostCollisionBehavior::SetColorToWhite)
 		{
-			//Box* handle = it->get();
-			it = boxPtrs.erase(it);
-			//Box* bPtr = handle->release();
-			//assert(handle->get() == nullptr);
-			//delete bPtr;
+			boxPtrs = PostCollisionFunctions::SetToWhite(it->get(),std::move(boxPtrs));
+			//it=boxPtrs.begin();
 		}
+		//else if (it->get()->GetAction() == Box::PostCollisionBehavior::SplitInFour)
+		//{
+		//
+
+		//	Box* bPtr = it->get();
+		//	float currSize = bPtr->GetSize();
+		//	Vec2 currPos = bPtr->GetPosition();
+		//	if (currSize >= Game::boxSize / 18)
+		//	{
+		//		newBoxes.push_back({ {currPos.x + (currSize / 2),currPos.y + (currSize / 2)},currSize / 3.5f });
+		//		newBoxes.push_back({ {currPos.x + (currSize / 2),currPos.y - (currSize / 2)},currSize / 3.5f });
+		//		newBoxes.push_back({ {currPos.x - (currSize / 2),currPos.y + (currSize / 2)},currSize / 3.5f });
+		//		newBoxes.push_back({ {currPos.x - (currSize / 2),currPos.y - (currSize / 2)},currSize / 3.5f });
+		//		it = boxPtrs.erase(it);
+		//	}
+		//	else
+		//	{
+		//		it->get()->SetAction(Box::PostCollisionBehavior::NoAction);
+		//	}
+		//}
 		else
 		{
-			++it;
+			it++;
 		}
+		
 	}
+	//for (auto e : newBoxes)
+	//{
+	//	boxPtrs.push_back(Box::SpawnPos(e.pos, e.size, bounds, world, rng));
+	//}
+	//auto p = boxPtrs[0]->GetColorTrait().GetColor();
+	//std::generate_n(std::back_inserter(boxPtrs), 4*count, [this]() {
+	//	return Box::Spawn(boxSize / 4, bounds, world, rng);
+	//	});
 }
 
 void Game::ComposeFrame()

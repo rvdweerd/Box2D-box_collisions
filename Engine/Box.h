@@ -11,10 +11,18 @@
 #include "BodyPtr.h"
 #include "Boundaries.h"
 #include <random>
+#include <map>
 
 class Box
 {
 public:
+	enum class PostCollisionBehavior
+	{
+		NoAction = 0,
+		SetColorToWhite,
+		Destroy,
+		SplitInFour
+	};
 	class ColorTrait
 	{
 	public:
@@ -24,6 +32,8 @@ public:
 	};
 public:
 	static std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& world,std::mt19937& rng );
+	static std::unique_ptr<Box> Box::SpawnWhite(float size, const Boundaries& bounds, b2World& world, std::mt19937& rng);
+	static std::unique_ptr<Box> Box::SpawnPos(Vec2 pos,float size, const Boundaries& bounds, b2World& world, std::mt19937& rng);
 	Box( std::unique_ptr<ColorTrait> pColorTrait, b2World& world,const Vec2& pos,
 		float size = 1.0f,float angle = 0.0f,Vec2 linVel = {0.0f,0.0f},float angVel = 0.0f )
 		:
@@ -51,6 +61,8 @@ public:
 			pBody->CreateFixture( &fixtureDef );
 		}
 		pBody->SetUserData( this );
+		//fMap[PostCollisionBehavior::SetColorToWhite] = Box::SetColorToWhite;
+
 	}
 	void Draw( Pipeline<SolidEffect>& pepe ) const
 	{
@@ -92,13 +104,13 @@ public:
 		return *pColorTrait;
 	}
 	void SetColorToWhite();
-	void SetDestroyer()
+	void SetAction(const PostCollisionBehavior& a)
 	{
-		destroy = true;
+		action = a;
 	}
-	bool SelfDestructActive()
+	PostCollisionBehavior GetAction() const
 	{
-		return destroy;
+		return action;
 	}
 private:
 	static void Init()
@@ -114,5 +126,7 @@ private:
 	float size;
 	BodyPtr pBody;
 	std::unique_ptr<ColorTrait> pColorTrait;
-	bool destroy = false;
+	PostCollisionBehavior action = PostCollisionBehavior::NoAction;
+public:
+	//static std::map<PostCollisionBehavior, std::function<void(Box*)>> fMap;
 };

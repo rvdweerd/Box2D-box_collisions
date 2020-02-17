@@ -30,6 +30,11 @@
 #include "Pipeline.h"
 #include "SolidEffect.h"
 #include <random>
+#include <unordered_map>
+#include <functional>
+#include <set>
+#include <queue>
+//#include "PostCollisionFunctions.h"
 
 class Game
 {
@@ -44,13 +49,14 @@ private:
 	/********************************/
 	/*  User Functions              */
 	/********************************/
+	//void ApplyTransformation();
 private:
 	MainWindow& wnd;
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
 	static constexpr float boundarySize = 10.0f;
-	static constexpr float boxSize = 1.0f;
+	static constexpr float boxSize = 0.8f;
 	static constexpr int nBoxes = 6;
 	std::mt19937 rng = std::mt19937( std::random_device{}() );
 	FrameTimer ft;
@@ -58,5 +64,11 @@ private:
 	b2World world;
 	Boundaries bounds = Boundaries( world,boundarySize );
 	std::vector<std::unique_ptr<Box>> boxPtrs;
+	//std::queue<std::pair<Box*,PCFUNC>> instructQueue;
+	//std::vector<Box*> instructions;
+	//static std::unordered_map<int, std::function<void( std::unique_ptr<Box> )>> funcMap;
+	//static std::set<Box*, std::function<void(std::vector<std::unique_ptr<Box>>)>> instructions;
+
+	//std::function<std::vector<std::unique_ptr<Box>>(Box*, std::vector<std::unique_ptr<Box>>)> instruction;
 	/********************************/
 };
