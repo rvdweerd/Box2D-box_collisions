@@ -27,7 +27,22 @@
 #include <functional>
 #include <iterator>
 #include <map>
-#include "PostCollisionFunctions.h"
+
+void DefinePCFunctions(PCFUNC& SetToWhite)
+{
+	SetToWhite = [](Box* b)
+	{
+		if (b == nullptr)
+		{
+			int k = 0;
+		}
+
+		b->SetColorToWhite();
+		b->SetAction(Box::PostCollisionBehavior::NoAction);
+		//return std::move(m_boxPtrs);
+	};
+
+}
 
 Game::Game( MainWindow& wnd )
 	:
@@ -56,7 +71,52 @@ Game::Game( MainWindow& wnd )
 	{
 		boxPtrs.push_back(  Box::SpawnWhite(boxSize,bounds,world,rng) );
 	}
-	   
+	DefinePCFunctions(SetToWhite);
+	Destruct = [&](Box* b)
+	{
+		if (b == nullptr)
+		{
+			int k = 0;
+		}
+
+		for (auto it = boxPtrs.begin(); it != boxPtrs.end(); ++it)
+		{
+			if (it->get() == b)
+			{
+				boxPtrs.erase(it);
+				break;
+			}
+		}
+	};
+	SplitIntoFour = [&](Box* b)
+	{
+		if (b == nullptr)
+		{
+			int k = 0;
+		}
+		float currSize = b->GetSize();
+		Vec2 currPos = b->GetPosition();
+		if (currSize >= boxSize / 18)
+		{
+			boxPtrs.push_back(Box::SpawnPos({ currPos.x + (currSize / 2),currPos.y + (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
+			boxPtrs.push_back(Box::SpawnPos({ currPos.x + (currSize / 2),currPos.y - (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
+			boxPtrs.push_back(Box::SpawnPos({ currPos.x - (currSize / 2),currPos.y + (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
+			boxPtrs.push_back(Box::SpawnPos({ currPos.x - (currSize / 2),currPos.y - (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
+		}
+		for (auto it = boxPtrs.begin(); it != boxPtrs.end(); ++it)
+		{
+			if (it->get() == b)
+			{
+				boxPtrs.erase(it);
+				break;
+			}
+		}
+		while (!instructQueue.empty())
+		{
+			instructQueue.pop();
+		}
+	};
+
 	class Listener : public b2ContactListener
 	{
 	public:
@@ -85,12 +145,13 @@ Game::Game( MainWindow& wnd )
 
 				if (boxPtrs[0]->GetColorTrait().GetColor().dword != boxPtrs[1]->GetColorTrait().GetColor().dword )
 				{
-					//m_game->instructQueue.push({ boxPtrs[0],PostCollisionFunctions::SplitIntoFour });
+					m_game->instructQueue.push({ boxPtrs[0],m_game->SplitIntoFour });
 				}
-				if (boxPtrs[0]->GetColorTrait().GetColor().dword == Colors::White.dword || boxPtrs[1]->GetColorTrait().GetColor().dword == Colors::White.dword)
+				else if (boxPtrs[0]->GetColorTrait().GetColor().dword == Colors::White.dword || boxPtrs[1]->GetColorTrait().GetColor().dword == Colors::White.dword)
 				{
-					m_game->instructQueue.push({ boxPtrs[0],PostCollisionFunctions::SetToWhite });
-					m_game->instructQueue.push({ boxPtrs[1],PostCollisionFunctions::Destruct });
+					m_game->instructQueue.push({ boxPtrs[0],m_game->SetToWhite });
+						//PostCollisionFunctions::SetToWhite });
+					m_game->instructQueue.push({ boxPtrs[1],m_game->SetToWhite });
 				}				
 			}
 		}
@@ -114,8 +175,11 @@ void Game::UpdateModel()
 	world.Step( dt,8,3 );
 	while (!instructQueue.empty())
 	{
-		boxPtrs = instructQueue.front().second(instructQueue.front().first,std::move(boxPtrs));
+		auto func = instructQueue.front().second;
+		auto pActiveBox = instructQueue.front().first;
 		instructQueue.pop();
+		func(pActiveBox);
+		
 	}
 }
 

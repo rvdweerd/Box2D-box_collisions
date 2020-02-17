@@ -157,7 +157,6 @@
     <ClInclude Include="Mat3.h" />
     <ClInclude Include="Mouse.h" />
     <ClInclude Include="Pipeline.h" />
-    <ClInclude Include="PostCollisionFunctions.h" />
     <ClInclude Include="PubeScreenTransformer.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Resource.h" />

@@ -111,9 +111,6 @@
     <ClInclude Include="BodyPtr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PostCollisionFunctions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXErr.cpp">

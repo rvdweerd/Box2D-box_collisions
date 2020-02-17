@@ -20,6 +20,10 @@
 ******************************************************************************************/
 #pragma once
 
+#ifndef PCFUNC
+#define PCFUNC std::function<void(Box*)>
+#endif
+
 #include "Graphics.h"
 #include <memory>
 #include <vector>
@@ -34,7 +38,6 @@
 #include <functional>
 #include <set>
 #include <queue>
-#include "PostCollisionFunctions.h"
 
 class Game
 {
@@ -50,7 +53,7 @@ private:
 	/*  User Functions              */
 	/********************************/
 	//void ApplyTransformation();
-public:
+private:
 	MainWindow& wnd;
 	Graphics gfx;
 	/********************************/
@@ -65,6 +68,9 @@ public:
 	Boundaries bounds = Boundaries( world,boundarySize );
 	std::vector<std::unique_ptr<Box>> boxPtrs;
 	std::queue<std::pair<Box*,PCFUNC>> instructQueue;
+	PCFUNC SetToWhite;
+	PCFUNC Destruct;
+	PCFUNC SplitIntoFour;
 	//std::vector<Box*> instructions;
 	//static std::unordered_map<int, std::function<void( std::unique_ptr<Box> )>> funcMap;
 	//static std::set<Box*, std::function<void(std::vector<std::unique_ptr<Box>>)>> instructions;
