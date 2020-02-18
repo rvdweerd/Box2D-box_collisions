@@ -69,10 +69,8 @@ public:
 
 void Box::SetColorToWhite()
 {
-	//pColorTrait.reset( WhiteTrait().Clone() );
 	ColorTrait* temp = pColorTrait.release();
 	delete temp;
-	//pColorTrait = std::unique_ptr<WhiteTrait>();
 	pColorTrait = std::make_unique<WhiteTrait>();
 }
 
@@ -91,7 +89,7 @@ std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& wo
 	const auto ang = angle_dist( rng );
 	const auto angVel = angle_dist( rng ) * 1.5f;
 
-	std::unique_ptr<ColorTrait> pColorTrait = nullptr;// std::make_unique<RedTrait>();
+	std::unique_ptr<ColorTrait> pColorTrait = nullptr;
 	switch( type_dist( rng ) )
 	{
 	case 0:
@@ -113,45 +111,18 @@ std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& wo
 	
 	return std::make_unique<Box>( std::move( pColorTrait ),world,pos,size,ang,linVel,angVel );
 }
-
-std::unique_ptr<Box> Box::SpawnWhite(float size, const Boundaries& bounds, b2World& world, std::mt19937& rng)
-{
-	std::uniform_real_distribution<float> pos_dist(
-		-bounds.GetSize() + size * 2.0f,
-		bounds.GetSize() - size * 2.0f
-	);
-	std::uniform_real_distribution<float> power_dist(0.0f, 6.0f);
-	std::uniform_real_distribution<float> angle_dist(-PI, PI);
-	//std::uniform_int_distribution<int> type_dist(0, 4);
-
-	const auto linVel = (Vec2{ 1.0f,0.0f } *Mat2::Rotation(angle_dist(rng))) * power_dist(rng);
-	const auto pos = Vec2{ pos_dist(rng),pos_dist(rng) };
-	const auto ang = angle_dist(rng);
-	const auto angVel = angle_dist(rng) * 1.5f;
-
-	std::unique_ptr<ColorTrait> pColorTrait = nullptr;// std::make_unique<RedTrait>();
-	pColorTrait = std::make_unique<WhiteTrait>();
-	
-	return std::make_unique<Box>(std::move(pColorTrait), world, pos, size, ang, linVel, angVel);
-}
-
-
 std::unique_ptr<Box> Box::SpawnPos(Vec2 posIn,float size, const Boundaries& bounds, b2World& world, std::mt19937& rng)
 {
-	//std::uniform_real_distribution<float> pos_dist(
-	//	-bounds.GetSize() + size * 2.0f,
-//		bounds.GetSize() - size * 2.0f
-	//);
 	std::uniform_real_distribution<float> power_dist(0.0f, 6.0f);
 	std::uniform_real_distribution<float> angle_dist(-PI, PI);
 	std::uniform_int_distribution<int> type_dist(0, 4);
 
 	const auto linVel = (Vec2{ 1.0f,0.0f } *Mat2::Rotation(angle_dist(rng))) * power_dist(rng);
-	const auto pos = posIn;
+	//const auto pos = posIn;
 	const auto ang = angle_dist(rng);
 	const auto angVel = angle_dist(rng) * 1.5f;
 
-	std::unique_ptr<ColorTrait> pColorTrait = nullptr;// std::make_unique<RedTrait>();
+	std::unique_ptr<ColorTrait> pColorTrait = nullptr;
 	switch (type_dist(rng))
 	{
 	case 0:
@@ -171,5 +142,5 @@ std::unique_ptr<Box> Box::SpawnPos(Vec2 posIn,float size, const Boundaries& boun
 		break;
 	}
 
-	return std::make_unique<Box>(std::move(pColorTrait), world, pos, size, ang, linVel, angVel);
+	return std::make_unique<Box>(std::move(pColorTrait), world, posIn, size, ang, linVel, angVel);
 }

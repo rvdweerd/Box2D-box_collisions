@@ -52,29 +52,21 @@ private:
 	/********************************/
 	/*  User Functions              */
 	/********************************/
-	//void ApplyTransformation();
-private:
+public:
 	MainWindow& wnd;
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
 	static constexpr float boundarySize = 10.0f;
-	static constexpr float boxSize = 0.8f;
-	static constexpr int nBoxes = 6;
+	static constexpr float boxSize = 1.0f;
+	static constexpr int nBoxes = 3;
 	std::mt19937 rng = std::mt19937( std::random_device{}() );
 	FrameTimer ft;
 	Pipeline<SolidEffect> pepe;
 	b2World world;
 	Boundaries bounds = Boundaries( world,boundarySize );
 	std::vector<std::unique_ptr<Box>> boxPtrs;
-	std::queue<std::pair<Box*,PCFUNC>> instructQueue;
-	PCFUNC SetToWhite;
-	PCFUNC Destruct;
-	PCFUNC SplitIntoFour;
-	//std::vector<Box*> instructions;
-	//static std::unordered_map<int, std::function<void( std::unique_ptr<Box> )>> funcMap;
-	//static std::set<Box*, std::function<void(std::vector<std::unique_ptr<Box>>)>> instructions;
-
-	//std::function<std::vector<std::unique_ptr<Box>>(Box*, std::vector<std::unique_ptr<Box>>)> instruction;
+	std::vector<std::pair<Box*,PCFUNC>> instructions;
+	std::map<std::string,std::unique_ptr<PCFUNC>> pFuncs;
 	/********************************/
 };

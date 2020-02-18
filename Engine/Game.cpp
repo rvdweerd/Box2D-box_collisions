@@ -27,22 +27,7 @@
 #include <functional>
 #include <iterator>
 #include <map>
-
-void DefinePCFunctions(PCFUNC& SetToWhite)
-{
-	SetToWhite = [](Box* b)
-	{
-		if (b == nullptr)
-		{
-			int k = 0;
-		}
-
-		b->SetColorToWhite();
-		b->SetAction(Box::PostCollisionBehavior::NoAction);
-		//return std::move(m_boxPtrs);
-	};
-
-}
+#include "PCFunctionDef.h"
 
 Game::Game( MainWindow& wnd )
 	:
@@ -57,66 +42,8 @@ Game::Game( MainWindow& wnd )
 	std::generate_n( std::back_inserter( boxPtrs ),nBoxes,[this]() {
 		return Box::Spawn( boxSize,bounds,world,rng );
 	} );
-
-	bool WhiteExists = false;
-	for (auto i =0; i<nBoxes;i++)
-	{
-		if (boxPtrs[i]->GetColorTrait().GetColor().dword == Colors::White.dword)
-		{
-			WhiteExists = true;
-			break;
-		}
-	}
-	if (!WhiteExists)
-	{
-		boxPtrs.push_back(  Box::SpawnWhite(boxSize,bounds,world,rng) );
-	}
-	DefinePCFunctions(SetToWhite);
-	Destruct = [&](Box* b)
-	{
-		if (b == nullptr)
-		{
-			int k = 0;
-		}
-
-		for (auto it = boxPtrs.begin(); it != boxPtrs.end(); ++it)
-		{
-			if (it->get() == b)
-			{
-				boxPtrs.erase(it);
-				break;
-			}
-		}
-	};
-	SplitIntoFour = [&](Box* b)
-	{
-		if (b == nullptr)
-		{
-			int k = 0;
-		}
-		float currSize = b->GetSize();
-		Vec2 currPos = b->GetPosition();
-		if (currSize >= boxSize / 18)
-		{
-			boxPtrs.push_back(Box::SpawnPos({ currPos.x + (currSize / 2),currPos.y + (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
-			boxPtrs.push_back(Box::SpawnPos({ currPos.x + (currSize / 2),currPos.y - (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
-			boxPtrs.push_back(Box::SpawnPos({ currPos.x - (currSize / 2),currPos.y + (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
-			boxPtrs.push_back(Box::SpawnPos({ currPos.x - (currSize / 2),currPos.y - (currSize / 2) }, currSize / 3.5f, bounds, world, rng));
-		}
-		for (auto it = boxPtrs.begin(); it != boxPtrs.end(); ++it)
-		{
-			if (it->get() == b)
-			{
-				boxPtrs.erase(it);
-				break;
-			}
-		}
-		while (!instructQueue.empty())
-		{
-			instructQueue.pop();
-		}
-	};
-
+	InitPCFunctionSet(*this);
+	
 	class Listener : public b2ContactListener
 	{
 	public:
@@ -143,16 +70,17 @@ Game::Game( MainWindow& wnd )
 				msg << "Collision between " << tid0.name() << " and " << tid1.name() << std::endl;
 				OutputDebugStringA( msg.str().c_str() );
 
-				if (boxPtrs[0]->GetColorTrait().GetColor().dword != boxPtrs[1]->GetColorTrait().GetColor().dword )
+				
+				if (boxPtrs[0]->GetColorTrait().GetColor().dword == boxPtrs[1]->GetColorTrait().GetColor().dword )
 				{
-					m_game->instructQueue.push({ boxPtrs[0],m_game->SplitIntoFour });
-				}
-				else if (boxPtrs[0]->GetColorTrait().GetColor().dword == Colors::White.dword || boxPtrs[1]->GetColorTrait().GetColor().dword == Colors::White.dword)
-				{
-					m_game->instructQueue.push({ boxPtrs[0],m_game->SetToWhite });
-						//PostCollisionFunctions::SetToWhite });
-					m_game->instructQueue.push({ boxPtrs[1],m_game->SetToWhite });
+					m_game->instructions.push_back({ boxPtrs[0],*m_game->pFuncs["SetToWhite"]  });
+					m_game->instructions.push_back({ boxPtrs[1],*m_game->pFuncs["SetToWhite"] });					
 				}				
+				else if (boxPtrs[0]->GetColorTrait().GetColor().dword != boxPtrs[1]->GetColorTrait().GetColor().dword)
+				{
+					m_game->instructions.push_back({ boxPtrs[0],*m_game->pFuncs["SplitIntoFour"] });
+					m_game->instructions.push_back({ boxPtrs[1],*m_game->pFuncs["SplitIntoFour"] });
+				}
 			}
 		}
 	};
@@ -173,14 +101,14 @@ void Game::UpdateModel()
 {
 	const float dt = ft.Mark();
 	world.Step( dt,8,3 );
-	while (!instructQueue.empty())
+
+	for (auto p : instructions)
 	{
-		auto func = instructQueue.front().second;
-		auto pActiveBox = instructQueue.front().first;
-		instructQueue.pop();
+		auto func = p.second;
+		auto pActiveBox = p.first;
 		func(pActiveBox);
-		
 	}
+	instructions.clear();
 }
 
 void Game::ComposeFrame()
