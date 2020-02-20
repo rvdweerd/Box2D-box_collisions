@@ -22,6 +22,10 @@ public:
 		virtual ~ColorTrait() = default;
 		virtual Color GetColor() const = 0;
 		virtual std::unique_ptr<ColorTrait> Clone() const = 0;
+		bool operator==(const ColorTrait& c) const
+		{
+			return c.GetColor().dword == this->GetColor().dword;
+		}
 	};
 public:
 	static std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& world,std::mt19937& rng );
@@ -94,7 +98,10 @@ public:
 		return *pColorTrait;
 	}
 	void SetColorToWhite();
+	void MarkForDeath() { hasToDie = true; };
+	bool HasToDie() { return hasToDie; };
 private:
+	bool hasToDie = false;
 	static void Init()
 	{
 		if( model.indices.size() == 0 )

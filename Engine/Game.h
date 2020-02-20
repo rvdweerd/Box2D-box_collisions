@@ -59,7 +59,7 @@ public:
 	/*  User Variables              */
 	static constexpr float boundarySize = 10.0f;
 	static constexpr float boxSize = 1.0f;
-	static constexpr int nBoxes = 3;
+	static constexpr int nBoxes = 1;
 	std::mt19937 rng = std::mt19937( std::random_device{}() );
 	FrameTimer ft;
 	Pipeline<SolidEffect> pepe;

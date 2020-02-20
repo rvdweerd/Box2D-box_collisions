@@ -80,8 +80,9 @@ std::unique_ptr<Box> Box::Spawn( float size,const Boundaries& bounds,b2World& wo
 		-bounds.GetSize() + size * 2.0f,
 		bounds.GetSize() - size * 2.0f
 	);
-	std::uniform_real_distribution<float> power_dist( 0.0f,6.0f );
-	std::uniform_real_distribution<float> angle_dist( -PI,PI );
+	const float slowdown = 1 / 6.0f;
+	std::uniform_real_distribution<float> power_dist( 0.0f,6.0f * slowdown );
+	std::uniform_real_distribution<float> angle_dist( -PI*slowdown,PI*slowdown );
 	std::uniform_int_distribution<int> type_dist( 0,4 );
 
 	const auto linVel = (Vec2{ 1.0f,0.0f } * Mat2::Rotation( angle_dist( rng ) )) * power_dist( rng );

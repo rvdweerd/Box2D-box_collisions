@@ -68,19 +68,22 @@ Game::Game( MainWindow& wnd )
 
 				std::stringstream msg;
 				msg << "Collision between " << tid0.name() << " and " << tid1.name() << std::endl;
-				OutputDebugStringA( msg.str().c_str() );
+				//if (boxPtrs[0]->GetColorTrait() == boxPtrs[1]->GetColorTrait())
+				//if (tid0 == tid1)
+				//{
+					//msg << "Destruct!!";
+					//m_game->instructions.push_back({ boxPtrs[0],*m_game->pFuncs["Destruct"] });
+					//boxPtrs[0]->MarkForDeath();
+					//m_game->instructions.push_back({ boxPtrs[1],*m_game->pFuncs["Destruct"] });
+				//}
+				//else
+				//{
+				//	//msg << "Multiply!!";
+				//	//m_game->instructions.push_back({ boxPtrs[0],*m_game->pFuncs["SplitIntoFour"] });
+				//	//m_game->instructions.push_back({ boxPtrs[1],*m_game->pFuncs["SplitIntoFour"] });
+				//}
+				OutputDebugStringA(msg.str().c_str());
 
-				
-				if (boxPtrs[0]->GetColorTrait().GetColor().dword == boxPtrs[1]->GetColorTrait().GetColor().dword )
-				{
-					m_game->instructions.push_back({ boxPtrs[0],*m_game->pFuncs["SetToWhite"]  });
-					m_game->instructions.push_back({ boxPtrs[1],*m_game->pFuncs["SetToWhite"] });					
-				}				
-				else if (boxPtrs[0]->GetColorTrait().GetColor().dword != boxPtrs[1]->GetColorTrait().GetColor().dword)
-				{
-					m_game->instructions.push_back({ boxPtrs[0],*m_game->pFuncs["SplitIntoFour"] });
-					m_game->instructions.push_back({ boxPtrs[1],*m_game->pFuncs["SplitIntoFour"] });
-				}
 			}
 		}
 	};
@@ -100,15 +103,29 @@ void Game::Go()
 void Game::UpdateModel()
 {
 	const float dt = ft.Mark();
-	world.Step( dt,8,3 );
+	world.Step( 1.0f/40.0f,8,3 );
 
-	for (auto p : instructions)
+	while (!wnd.kbd.KeyIsEmpty())
 	{
-		auto func = p.second;
-		auto pActiveBox = p.first;
-		func(pActiveBox);
+		auto keyevent = wnd.kbd.ReadKey();
+		if (keyevent.IsRelease())
+		{
+			if (keyevent.GetCode() == VK_SPACE)
+			{
+ 				auto func = std::move(this->pFuncs["SplitIntoFour"]);
+				func->operator()(boxPtrs[0].get());
+				this->pFuncs["SplitIntoFour"] = std::move(func);
+			}
+		}
 	}
-	instructions.clear();
+	boxPtrs.erase(std::remove_if(boxPtrs.begin(), boxPtrs.end(), [](auto& b) {return b->HasToDie(); }), boxPtrs.end());
+	//for (auto p : instructions)
+	//{
+	//	auto func = p.second;
+	//	auto pActiveBox = p.first;
+	//	func(pActiveBox);
+	//}
+	//instructions.clear();
 }
 
 void Game::ComposeFrame()
