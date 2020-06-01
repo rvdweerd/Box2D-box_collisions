@@ -3,5 +3,5 @@ Box2D integration with Chili Game Engine Framework (Intermediate Game Programmin
 
 Playing around with rotating bouncing, splitting, destructing boxes.
 
-![demo]()
+![demo](BoxSplittingDemo.gif)
 
